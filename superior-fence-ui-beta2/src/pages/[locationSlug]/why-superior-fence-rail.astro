@@ -1,0 +1,42 @@
+---
+import InnerBanner from "../../components/InnerBanner/InnerBanner";
+import WhyUsSec from "../../components/WhyUs/WhyUs";
+import client from "../../graphql/client/ApolloClient";
+import type { IWhyUsQuery } from "../../graphql/generatedType/cmsTypes";
+import { WhyUsQuery } from "../../graphql/gql/cms.gql";
+import Layout from "../../layouts/Layout.astro";
+
+const { data: whyUsData } = await client.query<IWhyUsQuery>({
+  query: WhyUsQuery,
+});
+
+// console.log(whyUsData,"whyUsData")
+---
+
+<Layout
+  title={whyUsData?.page?.seo?.title}
+  description={whyUsData?.page?.seo?.metaDesc}
+  metaKeywords={whyUsData?.page?.seo?.metaKeywords}
+  opengraphDescription={whyUsData?.page?.seo?.opengraphDescription}
+  metaRobotsNofollow={whyUsData?.page?.seo?.metaRobotsNofollow}
+  metaRobotsNoindex={whyUsData?.page?.seo?.metaRobotsNoindex}
+  twitterDescription={whyUsData?.page?.seo?.twitterDescription}
+  twitterTitle={whyUsData?.page?.seo?.twitterTitle}
+  twitterImage={whyUsData?.page?.seo?.twitterImage?.mediaItemUrl}
+  twitterImage={whyUsData?.page?.seo?.twitterImage?.altText}
+  opengraphTitle={whyUsData?.page?.seo?.opengraphTitle}
+  opengraphType={whyUsData?.page?.seo?.opengraphType}
+  opengraphUrl={whyUsData?.page?.seo?.opengraphUrl}
+  opengraphSiteName={whyUsData?.page?.seo?.opengraphSiteName}
+  focuskw={whyUsData?.page?.seo?.focuskw}
+  canonical={whyUsData?.page?.seo?.canonical}
+  schema={whyUsData?.page?.seo?.schema?.raw}
+>
+  <InnerBanner
+    client:load
+    commonTitle={whyUsData?.page?.commonHeaderBanner?.commonHeaderBannerTitle}
+    data={whyUsData?.page?.commonHeaderBanner}
+    bannerBtnTxt="GET A FREE QUOTE >"
+  />
+  <WhyUsSec client:load data={whyUsData} />
+</Layout>

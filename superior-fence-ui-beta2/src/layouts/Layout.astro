@@ -1,0 +1,160 @@
+---
+import pkg from "@apollo/client/main.cjs";
+import client from "../graphql/client/ApolloClient";
+import type { IFenceServicesSidebarQuery } from "../graphql/generatedType/FenceServiceTypes";
+import type { IFenceTypesQuery } from "../graphql/generatedType/FenceTypeResponseTypes";
+import type {
+  CommonSettingsQueryData,
+  IServiceLocationResponse,
+} from "../graphql/generatedType/ResponseType";
+import { IServiceLocationQuery } from "../graphql/gql/birmingham.gql";
+import { FenceServicesSidebarQuery } from "../graphql/gql/fenceService.gql";
+import { FenceTypesQuery } from "../graphql/gql/fenceTypeCategoryDetails.gql";
+import { CommonSettingQuery } from "../graphql/gql/home.gql";
+import "../styles/global.scss";
+import Footer from "../components/SFRV2/Footer/Footer";
+import Header from "../components/SFRV3/Header/Header";
+import FooterList from "../components/SFRV3/FooterList/FooterList";
+import type { IStateWiseLocationTypes } from "../graphql/generatedType/StateWiseLocationTypes";
+import { StateWiseLocationQuery } from "../graphql/gql/stateWiseLocation.gql";
+const { ApolloProvider } = pkg;
+
+const { locationSlug } = Astro.params;
+const {
+  title,
+  description,
+  metaKeywords,
+  opengraphDescription,
+  metaRobotsNofollow,
+  metaRobotsNoindex,
+  twitterDescription,
+  twitterTitle,
+  twitterImage,
+  opengraphTitle,
+  opengraphType,
+  opengraphUrl,
+  opengraphSiteName,
+  focuskw,
+  canonical,
+  schema,
+} = Astro.props;
+
+const [
+  { data },
+  { data: fenceData },
+  { data: fenceServicesSidebarData },
+  { data: locationData },
+  { data: stateWiseData },
+] = await Promise.all([
+  client.query<CommonSettingsQueryData>({
+    query: CommonSettingQuery,
+  }),
+  client.query<IFenceTypesQuery>({
+    query: FenceTypesQuery,
+  }),
+  client.query<IFenceServicesSidebarQuery>({
+    query: FenceServicesSidebarQuery,
+  }),
+  client.query<IServiceLocationResponse>({
+    query: IServiceLocationQuery,
+    variables: {
+      id: locationSlug || "base_route",
+    },
+    fetchPolicy: "cache-first",
+  }),
+  client.query<IStateWiseLocationTypes>({
+    query: StateWiseLocationQuery,
+    fetchPolicy: "cache-first",
+  }),
+]);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.png" />
+    <link rel="canonical" href={canonical} />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+
+    <!-- Meta Tags -->
+    <meta name="keywords" content={metaKeywords} />
+
+    <meta property="og:description" content={opengraphDescription} />
+
+    <meta name="robots" content={metaRobotsNoindex} />
+
+    <meta name="robots" content={metaRobotsNofollow} />
+
+    <meta name="twitter:description" content={twitterDescription} />
+
+    <meta name="twitter:title" content={twitterTitle} />
+
+    <meta name="twitter:image" content={twitterImage?.mediaItemUrl} />
+
+    <meta name="twitter:image:alt" content={twitterImage?.altText} />
+
+    <meta property="og:title" content={opengraphTitle} />
+
+    <meta property="og:type" content={opengraphType} />
+
+    <meta property="og:url" content={opengraphUrl} />
+
+    <meta property="og:site_name" content={opengraphSiteName} />
+    <meta name="focuskw" content={focuskw} />
+  
+    <title>
+      {title}
+    </title>
+
+    <meta
+      name="google-site-verification"
+      content="FJJWLGiGweMFr-hhI8eINCMB_3zrj2jtYQ2Vd-dM2ME"
+    />
+
+    <!-- Google Tag Manager -->
+    <!-- <script async>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-575BZMD");
+    </script> -->
+    <!-- End Google Tag Manager -->
+  </head>
+  <body>
+    <ApolloProvider client={client}>
+      <Header
+        client:load
+        headerLogo={data?.themeSettings?.themeOption?.headerLogo?.node
+          ?.mediaItemUrl}
+        fenceType={fenceData}
+        fenceServiceList={fenceServicesSidebarData}
+        locationBasedSlug={locationData?.locationState?.edges[0]?.node?.slug ||
+          ""}
+      />
+      <slot />
+      <FooterList client:load statedata={stateWiseData} />
+
+      <Footer data={data} />
+    </ApolloProvider>
+
+    <!-- Google Tag Manager (noscript) -->
+    <!-- <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-575BZMD"
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"></iframe></noscript
+    > -->
+    <!-- End Google Tag Manager (noscript) -->
+    {schema && <script type="application/ld+json" set:html={schema} />}
+  </body>
+</html>

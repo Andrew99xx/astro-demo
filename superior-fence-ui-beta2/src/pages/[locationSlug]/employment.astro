@@ -1,0 +1,53 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import LocationBasedEmploymentSec from "../../components/EmploymentSec/LocationBasedEmploymentSec";
+import client from "../../graphql/client/ApolloClient";
+import type { ILocationBasedEmployment } from "../../graphql/generatedType/EmploymentTypes";
+import { ILocationBasedEmploymentQuery } from "../../graphql/gql/employment.gql";
+
+const { locationSlug } = Astro.params;
+
+const { data: employmentDetailsData } =
+  await client.query<ILocationBasedEmployment>({
+    query: ILocationBasedEmploymentQuery,
+    variables: {
+      id: `employment-${locationSlug}`,
+    },
+    fetchPolicy: "cache-first",
+  });
+---
+
+<Layout
+  title={employmentDetailsData?.pages?.edges[0]?.node?.seo?.title}
+  description={employmentDetailsData?.pages?.edges[0]?.node?.seo?.metaDesc}
+  metaKeywords={employmentDetailsData?.pages?.edges[0]?.node?.seo?.metaKeywords}
+  opengraphDescription={employmentDetailsData?.pages?.edges[0]?.node?.seo
+    ?.opengraphDescription}
+  metaRobotsNofollow={employmentDetailsData?.pages?.edges[0]?.node?.seo
+    ?.metaRobotsNofollow}
+  metaRobotsNoindex={employmentDetailsData?.pages?.edges[0]?.node?.seo
+    ?.metaRobotsNoindex}
+  twitterDescription={employmentDetailsData?.pages?.edges[0]?.node?.seo
+    ?.twitterDescription}
+  twitterTitle={employmentDetailsData?.pages?.edges[0]?.node?.seo?.twitterTitle}
+  twitterImage={employmentDetailsData?.pages?.edges[0]?.node?.seo?.twitterImage
+    ?.mediaItemUrl}
+  twitterImage={employmentDetailsData?.pages?.edges[0]?.node?.seo?.twitterImage
+    ?.altText}
+  opengraphTitle={employmentDetailsData?.pages?.edges[0]?.node?.seo
+    ?.opengraphTitle}
+  opengraphType={employmentDetailsData?.pages?.edges[0]?.node?.seo
+    ?.opengraphType}
+  opengraphUrl={employmentDetailsData?.pages?.edges[0]?.node?.seo?.opengraphUrl}
+  opengraphSiteName={employmentDetailsData?.pages?.edges[0]?.node?.seo
+    ?.opengraphSiteName}
+  focuskw={employmentDetailsData?.pages?.edges[0]?.node?.seo?.focuskw}
+  canonical={employmentDetailsData?.pages?.edges[0]?.node?.seo?.canonical}
+  schema={employmentDetailsData?.pages?.edges[0]?.node?.seo?.schema?.raw}
+>
+  <LocationBasedEmploymentSec
+    data={employmentDetailsData}
+    parentSlugName={locationSlug}
+    client:load
+  />
+</Layout>

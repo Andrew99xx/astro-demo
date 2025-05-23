@@ -1,0 +1,53 @@
+---
+import InnerBanner from "../../components/InnerBanner/InnerBanner";
+import NewFence from "../../components/NewFence/NewFence";
+import client from "../../graphql/client/ApolloClient";
+import type {
+  IFenceTypesQuery,
+  IFenceTypesSidebar,
+} from "../../graphql/generatedType/FenceTypeResponseTypes";
+import { CommonSideBarQuery } from "../../graphql/gql/commonSidebar.gql";
+import { FenceTypesQuery } from "../../graphql/gql/fenceTypeCategoryDetails.gql";
+import Layout from "../../layouts/Layout.astro";
+
+const { data: fenceData } = await client.query<IFenceTypesQuery>({
+  query: FenceTypesQuery,
+});
+const { data: commonSidebarData } = await client.query<IFenceTypesSidebar>({
+  query: CommonSideBarQuery,
+});
+
+// console.log(fenceData?.allFenceTypesCategory?.edges[0].node?.fenceTypesCategoryPurpose,"fenceData")
+---
+
+<Layout
+  title={fenceData?.page?.seo?.title}
+  description={fenceData?.page?.seo?.metaDesc}
+  metaKeywords={fenceData?.page?.seo?.metaKeywords}
+  opengraphDescription={fenceData?.page?.seo?.opengraphDescription}
+  metaRobotsNofollow={fenceData?.page?.seo?.metaRobotsNofollow}
+  metaRobotsNoindex={fenceData?.page?.seo?.metaRobotsNoindex}
+  twitterDescription={fenceData?.page?.seo?.twitterDescription}
+  twitterTitle={fenceData?.page?.seo?.twitterTitle}
+  twitterImage={fenceData?.page?.seo?.twitterImage?.mediaItemUrl}
+  twitterImage={fenceData?.page?.seo?.twitterImage?.altText}
+  opengraphTitle={fenceData?.page?.seo?.opengraphTitle}
+  opengraphType={fenceData?.page?.seo?.opengraphType}
+  opengraphUrl={fenceData?.page?.seo?.opengraphUrl}
+  opengraphSiteName={fenceData?.page?.seo?.opengraphSiteName}
+  focuskw={fenceData?.page?.seo?.focuskw}
+  canonical={fenceData?.page?.seo?.canonical}
+  schema={fenceData?.page?.seo?.schema?.raw}
+>
+  <InnerBanner
+    client:load
+    data={fenceData.page.commonHeaderBanner}
+    commonTitle={fenceData?.page?.commonHeaderBanner?.commonHeaderBannerTitle}
+  />
+  <NewFence
+    client:load
+    sidebarData={commonSidebarData}
+    fenceListdata={fenceData?.allFenceTypesCategory}
+    fenceData={fenceData}
+  />
+</Layout>

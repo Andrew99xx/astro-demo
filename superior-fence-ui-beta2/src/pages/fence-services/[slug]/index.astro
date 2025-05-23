@@ -1,0 +1,100 @@
+---
+import FenceServiceDetails from "../../../components/FenceServiceDetails/FenceServiceDetails";
+import InnerBanner from "../../../components/InnerBanner/InnerBanner";
+import NewsRecentPost2 from "../../../components/NewsRecentPost/NewsRecentPost2";
+import client from "../../../graphql/client/ApolloClient";
+import type { IAboutUsQueryResult } from "../../../graphql/generatedType/CommonTypes";
+import type {
+  IFenceServicesQueryData,
+  IFenceServicesSidebarQuery,
+} from "../../../graphql/generatedType/FenceServiceTypes";
+import { AboutUsQuery } from "../../../graphql/gql/about.gql";
+import {
+  FenceServicesQuery,
+  FenceServicesSidebarQuery,
+} from "../../../graphql/gql/fenceService.gql";
+import Layout from "../../../layouts/Layout.astro";
+
+const { data: sidebarData } = await client.query<IFenceServicesSidebarQuery>({
+  query: FenceServicesSidebarQuery,
+});
+
+const { slug } = Astro.params;
+
+const { data: fenceServiceDetailsData } =
+  await client.query<IFenceServicesQueryData>({
+    query: FenceServicesQuery,
+    variables: {
+      id: slug,
+    },
+  });
+const { data: aboutUsQueryData } = await client.query<IAboutUsQueryResult>({
+  query: AboutUsQuery,
+});
+---
+
+<Layout
+  title={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.seo?.title}
+  description={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.seo
+    ?.metaDesc}
+  metaKeywords={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.seo
+    ?.metaKeywords}
+  opengraphDescription={fenceServiceDetailsData?.allFenceServices?.edges[0]
+    ?.node?.seo?.opengraphDescription}
+  metaRobotsNofollow={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node
+    ?.seo?.metaRobotsNofollow}
+  metaRobotsNoindex={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node
+    ?.seo?.metaRobotsNoindex}
+  twitterDescription={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node
+    ?.seo?.twitterDescription}
+  twitterTitle={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.seo
+    ?.twitterTitle}
+  twitterImage={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.seo
+    ?.twitterImage?.mediaItemUrl}
+  twitterImage={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.seo
+    ?.twitterImage?.altText}
+  opengraphTitle={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.seo
+    ?.opengraphTitle}
+  opengraphType={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.seo
+    ?.opengraphType}
+  opengraphUrl={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.seo
+    ?.opengraphUrl}
+  opengraphSiteName={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node
+    ?.seo?.opengraphSiteName}
+  focuskw={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.seo
+    ?.focuskw}
+  canonical={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.seo
+    ?.canonical}
+  schema={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.seo?.schema
+    ?.raw}
+>
+  <InnerBanner
+    data={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node
+      ?.commonHeaderBanner}
+    commonTitle={fenceServiceDetailsData?.allFenceServices?.edges[0]?.node
+      ?.commonHeaderBanner?.commonHeaderBannerTitle}
+    headingClassName=" !text-[40px]"
+    noRightPart={slug === "fence-video-tutorials" || slug === "production"}
+    client:load
+  >
+    {
+      fenceServiceDetailsData?.allFenceServices?.edges[0]?.node
+        ?.commonHeaderBanner?.commonHeaderBannerDescription && (
+        <p
+          class={`${fenceServiceDetailsData?.allFenceServices?.edges[0]?.node?.slug === "production" ? "text-white text-[20px] font-montserratregular font-normal" : "tedxt-[#707070] text-[19.2px] font-montserratsemibold"} `}
+        >
+          {
+            fenceServiceDetailsData?.allFenceServices?.edges[0]?.node
+              ?.commonHeaderBanner?.commonHeaderBannerDescription
+          }
+        </p>
+      )
+    }
+  </InnerBanner>
+  <FenceServiceDetails
+    client:load
+    sidebarData={sidebarData}
+    fenceServiceDetailsData={fenceServiceDetailsData}
+  />
+  <NewsRecentPost2 postData={aboutUsQueryData.posts} client:load />
+</Layout>
