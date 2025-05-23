@@ -4,6 +4,7 @@ import vercel from "@astrojs/vercel/serverless";
 import { defineConfig } from "astro/config";
 import vercel from "@astrojs/vercel";
 import node from "@astrojs/node";
+import awsAmplify from 'astro-aws-amplify';
 
 export default defineConfig({
   integrations: [
@@ -17,9 +18,11 @@ export default defineConfig({
   // adapter: vercel({
   //   devImageService: "sharp",
   // }),
-  adapter: node({
-    mode: "standalone",
-  }),
+//  adapter: node({
+//    mode: "standalone",
+//  }),
+     adapter: awsAmplify(),
+
   server: {
     host: "0.0.0.0", // Bind to all network interfaces
     port: 14258, // Use the desired port
