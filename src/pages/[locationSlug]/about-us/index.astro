@@ -1,0 +1,64 @@
+---
+import InnerBanner from "../../../components/InnerBanner/InnerBanner";
+import AboutUsLocation from "../../../components/AboutUs/AboutUsLocation";
+import client from "../../../graphql/client/ApolloClient";
+import type { ILocationDetailsAboutUs } from "../../../graphql/generatedType/LocationDetailsTypes";
+import { LocationDetailsAboutUsQuery } from "../../../graphql/gql/locationDetails.gql";
+import Layout from "../../../layouts/Layout.astro";
+
+const { locationSlug } = Astro.params;
+
+const { data: aboutUsData, error: aboutUsError } =
+  await client.query<ILocationDetailsAboutUs>({
+    query: LocationDetailsAboutUsQuery,
+    variables: {
+      id: `about-us-${locationSlug}`,
+    },
+    fetchPolicy: "cache-first",
+  });
+
+console.log(aboutUsData, "aboutUsData");
+
+---
+
+<Layout
+  title={aboutUsData?.pages?.edges[0]?.node?.seo?.title}
+  description={aboutUsData?.pages?.edges[0]?.node?.seo?.metaDesc}
+  metaKeywords={aboutUsData?.pages?.edges[0]?.node?.seo?.metaKeywords}
+  opengraphDescription={aboutUsData?.pages?.edges[0]?.node?.seo
+    ?.opengraphDescription}
+  metaRobotsNofollow={aboutUsData?.pages?.edges[0]?.node?.seo
+    ?.metaRobotsNofollow}
+  metaRobotsNoindex={aboutUsData?.pages?.edges[0]?.node?.seo?.metaRobotsNoindex}
+  twitterDescription={aboutUsData?.pages?.edges[0]?.node?.seo
+    ?.twitterDescription}
+  twitterTitle={aboutUsData?.pages?.edges[0]?.node?.seo?.twitterTitle}
+  twitterImage={aboutUsData?.pages?.edges[0]?.node?.seo?.twitterImage
+    ?.mediaItemUrl}
+  twitterImage={aboutUsData?.pages?.edges[0]?.node?.seo?.twitterImage?.altText}
+  opengraphTitle={aboutUsData?.pages?.edges[0]?.node?.seo?.opengraphTitle}
+  opengraphType={aboutUsData?.pages?.edges[0]?.node?.seo?.opengraphType}
+  opengraphUrl={aboutUsData?.pages?.edges[0]?.node?.seo?.opengraphUrl}
+  opengraphSiteName={aboutUsData?.pages?.edges[0]?.node?.seo?.opengraphSiteName}
+  focuskw={aboutUsData?.pages?.edges[0]?.node?.seo?.focuskw}
+  canonical={aboutUsData?.pages?.edges[0]?.node?.seo?.canonical}
+  schema={aboutUsData?.pages?.edges[0]?.node?.seo?.schema?.raw}
+>
+  <InnerBanner
+    data={aboutUsData?.pages?.edges[0]?.node?.commonHeaderBanner}
+    commonTitle={aboutUsData?.pages?.edges[0]?.node?.commonHeaderBanner
+      ?.commonHeaderBannerTitle}
+  >
+    <p>
+      {
+        aboutUsData?.pages?.edges[0]?.node?.commonHeaderBanner
+          ?.commonHeaderBannerDescription
+      }
+    </p>
+  </InnerBanner>
+  <AboutUsLocation
+    client:only="React"
+    data={aboutUsData}
+    parentSlugName={locationSlug}
+  />
+</Layout>

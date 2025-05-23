@@ -1,0 +1,49 @@
+---
+import ContactContent from "../../../components/ContactContent/ContactContent";
+import client from "../../../graphql/client/ApolloClient";
+import type { IContactUsPage } from "../../../graphql/generatedType/ContactTypes";
+import { serviceQuery } from "../../../graphql/gql/contact.gql";
+import Layout from "../../../layouts/Layout.astro";
+
+const { locationSlug } = Astro.params;
+
+const { data: serviceData, error: aboutUsError } =
+  await client.query<IContactUsPage>({
+    query: serviceQuery,
+    variables: {
+      id: `contact-us-${locationSlug}`,
+    },
+    fetchPolicy: "cache-first",
+  });
+
+console.log(
+  serviceData?.pages?.edges[0]?.node.contactUsPagePurpose,
+  "serviceData"
+);
+---
+
+<Layout
+  title={serviceData?.pages?.edges[0]?.node?.seo?.title}
+  description={serviceData?.pages?.edges[0]?.node?.seo?.metaDesc}
+  metaKeywords={serviceData?.pages?.edges[0]?.node?.seo?.metaKeywords}
+  opengraphDescription={serviceData?.pages?.edges[0]?.node?.seo
+    ?.opengraphDescription}
+  metaRobotsNofollow={serviceData?.pages?.edges[0]?.node?.seo
+    ?.metaRobotsNofollow}
+  metaRobotsNoindex={serviceData?.pages?.edges[0]?.node?.seo?.metaRobotsNoindex}
+  twitterDescription={serviceData?.pages?.edges[0]?.node?.seo
+    ?.twitterDescription}
+  twitterTitle={serviceData?.pages?.edges[0]?.node?.seo?.twitterTitle}
+  twitterImage={serviceData?.pages?.edges[0]?.node?.seo?.twitterImage
+    ?.mediaItemUrl}
+  twitterImage={serviceData?.pages?.edges[0]?.node?.seo?.twitterImage?.altText}
+  opengraphTitle={serviceData?.pages?.edges[0]?.node?.seo?.opengraphTitle}
+  opengraphType={serviceData?.pages?.edges[0]?.node?.seo?.opengraphType}
+  opengraphUrl={serviceData?.pages?.edges[0]?.node?.seo?.opengraphUrl}
+  opengraphSiteName={serviceData?.pages?.edges[0]?.node?.seo?.opengraphSiteName}
+  focuskw={serviceData?.pages?.edges[0]?.node?.seo?.focuskw}
+  canonical={serviceData?.pages?.edges[0]?.node?.seo?.canonical}
+  schema={serviceData?.pages?.edges[0]?.node?.seo?.schema?.raw}
+>
+  <ContactContent data={serviceData} />
+</Layout>

@@ -1,0 +1,14 @@
+# Node.js
+node_modules/
+
+# Astro
+/dist
+/.astro
+/.cache
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+.vercel

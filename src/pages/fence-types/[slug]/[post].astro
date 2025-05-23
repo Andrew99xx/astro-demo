@@ -1,0 +1,368 @@
+---
+import BlogDetailsBanner from "../../../components/BlogDetailsBanner/BlogDetailsBanner";
+import CustomSingleMapSec from "../../../components/CustomFindMap/SingleMap";
+import InnerBanner from "../../../components/InnerBanner/InnerBanner";
+import SubCategoryFenceType from "../../../components/SubCategoryFenceType/SubCategoryFenceType";
+import { Button } from "../../../components/ui/button";
+import client from "../../../graphql/client/ApolloClient";
+import type { IFenceTypesSidebar } from "../../../graphql/generatedType/FenceTypeResponseTypes";
+import type { ICommonSideBarQueryResponse } from "../../../graphql/generatedType/FenceTypeSubCategoryTypes";
+import type { IBlogDetailsResponse } from "../../../graphql/generatedType/ResponseType";
+import { BlogDetails } from "../../../graphql/gql/blog-details.gql";
+import { CommonSideBarQuery } from "../../../graphql/gql/commonSidebar.gql";
+import { FenceSubcategoryDetails } from "../../../graphql/gql/fenceTypeSubCategoryDetails.gql";
+import Layout from "../../../layouts/Layout.astro";
+import { slugify } from "../../../lib/utils";
+import { CloudfrontImg } from "../../../components/ui/CloudfrontImg";
+
+const { post } = Astro.params;
+
+const { data: fenceTypeSubCategoryDetails } =
+  await client.query<ICommonSideBarQueryResponse>({
+    query: FenceSubcategoryDetails,
+    variables: {
+      id: post,
+    },
+    fetchPolicy: "cache-first",
+  });
+
+let seoData = fenceTypeSubCategoryDetails?.allFenceTypes?.edges[0]?.node?.seo;
+
+const isShowingSubCat =
+  fenceTypeSubCategoryDetails.allFenceTypes.edges.length ||
+  fenceTypeSubCategoryDetails.posts.edges.length;
+
+//sidebar data only for category
+let commonSidebarData: IFenceTypesSidebar | null = null;
+if (isShowingSubCat) {
+  const { data } = await client.query<IFenceTypesSidebar>({
+    query: CommonSideBarQuery,
+  });
+  commonSidebarData = data;
+}
+
+//post details
+let fencePostDetails: IBlogDetailsResponse | null = null;
+let fenceTypeSubCategoryDetailsPrev: IBlogDetailsResponse | null = null;
+let fenceTypeSubCategoryDetailsNext: IBlogDetailsResponse | null = null;
+
+if (!isShowingSubCat) {
+  const { data } = await client.query<IBlogDetailsResponse>({
+    query: BlogDetails,
+    variables: {
+      id: post,
+    },
+    fetchPolicy: "cache-first",
+  });
+  fencePostDetails = data;
+  seoData = fencePostDetails?.post?.seo;
+  if (fencePostDetails?.post?.previousPostId) {
+    const { data: prevData, error: fenceTypeSubCategoryDetailsPrevError } =
+      await client.query<IBlogDetailsResponse>({
+        query: BlogDetails,
+        variables: { id: fencePostDetails.post.previousPostId },
+        fetchPolicy: "cache-first",
+      });
+
+    if (!fenceTypeSubCategoryDetailsPrevError) {
+      fenceTypeSubCategoryDetailsPrev = prevData;
+    } else {
+      console.error(
+        "Error fetching previous post details:",
+        fenceTypeSubCategoryDetailsPrevError
+      );
+    }
+  }
+
+  if (fencePostDetails?.post?.nextPostId) {
+    const { data: nextData, error: fenceTypeSubCategoryDetailsNextError } =
+      await client.query<IBlogDetailsResponse>({
+        query: BlogDetails,
+        variables: { id: fencePostDetails.post.nextPostId },
+        fetchPolicy: "cache-first",
+      });
+
+    if (!fenceTypeSubCategoryDetailsNextError) {
+      fenceTypeSubCategoryDetailsNext = nextData;
+    } else {
+      console.error(
+        "Error fetching next post details:",
+        fenceTypeSubCategoryDetailsNextError
+      );
+    }
+  }
+}
+
+console.log(
+  fenceTypeSubCategoryDetails?.allFenceTypes.edges[0]?.node?.seo,
+  "seoData"
+);
+---
+
+<Layout
+  title={seoData?.title}
+  description={seoData?.metaDesc}
+  metaKeywords={seoData?.metaKeywords}
+  opengraphDescription={seoData?.opengraphDescription}
+  metaRobotsNofollow={seoData?.metaRobotsNofollow}
+  metaRobotsNoindex={seoData?.metaRobotsNoindex}
+  twitterDescription={seoData?.twitterDescription}
+  twitterTitle={seoData?.twitterTitle}
+  twitterImage={seoData?.twitterImage?.mediaItemUrl}
+  twitterImage={seoData?.twitterImage?.altText}
+  opengraphTitle={seoData?.opengraphTitle}
+  opengraphType={seoData?.opengraphType}
+  opengraphUrl={seoData?.opengraphUrl}
+  opengraphSiteName={seoData?.opengraphSiteName}
+  focuskw={seoData?.focuskw}
+  canonical={seoData?.canonical}
+  schema={seoData?.schema?.raw}
+>
+  {
+    isShowingSubCat ? (
+      <>
+        <InnerBanner
+          client:load
+          commonTitle={
+            fenceTypeSubCategoryDetails?.allFenceTypes?.edges[0]?.node
+              ?.commonHeaderBanner?.commonHeaderBannerTitle
+          }
+          data={
+            fenceTypeSubCategoryDetails?.allFenceTypes?.edges[0]?.node
+              ?.commonHeaderBanner
+          }
+          bannerType={
+            fenceTypeSubCategoryDetails?.allFenceTypes?.edges[0]?.node
+              ?.fenceTypePostPurpose?.fenceType
+          }
+        />
+        <SubCategoryFenceType
+          client:load
+          data={fenceTypeSubCategoryDetails}
+          sideBarData={commonSidebarData}
+        />
+      </>
+    ) : null
+  }
+  {
+    !isShowingSubCat ? (
+      <>
+        <BlogDetailsBanner
+          title={fencePostDetails?.post?.title}
+          categories={fencePostDetails?.post?.categories}
+          date={fencePostDetails?.post?.date}
+          author={fencePostDetails?.post?.author?.node?.firstName}
+          featuredImage={fencePostDetails?.post?.featuredImage}
+        />
+
+        <div class="py-[60px]">
+          <div class="container">
+            <div class="border-b-[3px] border-b-solid border-b-[rgba(0, 0, 0, .07)] pb-10">
+              <h2 class="tex-[42px] text-normal mb-2 capitalize">
+                {fencePostDetails?.post?.title}
+              </h2>
+
+              {fencePostDetails?.post?.content ? (
+                <div
+                  class="mb-4 blogDetails_content"
+                  set:html={fencePostDetails?.post?.content}
+                />
+              ) : (
+                <figure class="w-[750px] h-[650px] mb-[30px]">
+                  <CloudfrontImg
+                    src={
+                      fencePostDetails?.post?.featuredImage?.node?.mediaItemUrl
+                    }
+                    alt={fencePostDetails?.post?.featuredImage?.node?.altText}
+                    className="size-full object-cover"
+                  />
+                </figure>
+              )}
+
+              <div class="flex flex-wrap -mx-[20px]">
+                <div class="w-1/2 px-[20px]">
+                  <div class="blog_details_map_wrapper">
+                    <CustomSingleMapSec
+                      client:only="react"
+                      locationLat={parseFloat(
+                        fencePostDetails?.themeSettings?.themeOption
+                          .blogPageMapLat
+                      )}
+                      locationLong={parseFloat(
+                        fencePostDetails?.themeSettings?.themeOption
+                          .blogPageMapLong
+                      )}
+                      noPopUp
+                    />
+                  </div>
+                  <ul class="flex items-center flex-wrap mt-[20px]">
+                    {fencePostDetails?.post?.tags.nodes.map((item: any) => (
+                      <li class="mr-2 mb-1">
+                        <a
+                          class="text-[12px] font-normal uppercase text-black hover:text-primary transition-all duration-300 pr-2"
+                          href={`/tag/${slugify(item.name)}`}
+                        >
+                          {item.name}
+                        </a>
+                        /
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div class="w-1/2 px-[20px]">
+                  <h3 class="text-[26px] font-semibold pb-3 leading-1 relative before:content-[''] before:absolute before:bottom-0 before:l-0 before:w-8 before:h-[2px] before:bg-[#252525] mb-3">
+                    {
+                      fencePostDetails?.themeSettings?.themeOption
+                        ?.blogGetAFenceQuoteHeading
+                    }
+                  </h3>
+                  <div
+                    class="quate_lst"
+                    set:html={
+                      fencePostDetails?.themeSettings?.themeOption
+                        ?.blogGetAFenceQuote
+                    }
+                  />
+
+                  <Button
+                    variant="default"
+                    className="px-[58px] text-[14.4px] min-w-auto w-full mt-3"
+                  >
+                    {"GET A FENCE QUOTE >"}
+                  </Button>
+                </div>
+              </div>
+
+              <div class="mt-[30px]">
+                <h3 class="tecxt-19px mb-3 font-bold">Leave a Reply</h3>
+                <p class="mb-[20px]">
+                  Your email address will not be published. Required fields are
+                  marked *
+                </p>
+                <form>
+                  <div class="mb-4">
+                    <p class="text-[#707070] text-[11px] font-medium capitalize">
+                      Comment *
+                    </p>
+                    <textarea
+                      name="project_details"
+                      class="w-full p-3 border-[1px] border-solid border-[#70707052] h-[258px]"
+                      required
+                      minlength={4}
+                    />
+                  </div>
+                  <div class="mb-4">
+                    <p class="text-[#707070] text-[11px] font-medium capitalize">
+                      Name *
+                    </p>
+                    <input
+                      class="w-full p-3 border-[1px] border-solid border-[#70707052]"
+                      name="zip_code"
+                      required
+                    />
+                  </div>
+                  <div class="mb-4">
+                    <p class="text-[#707070] text-[11px] font-medium capitalize">
+                      Email *
+                    </p>
+                    <input
+                      class="w-full p-3 border-[1px] border-solid border-[#70707052]"
+                      name="zip_code"
+                      required
+                    />
+                  </div>
+                  <div class="mb-4">
+                    <p class="text-[#707070] text-[11px] font-medium capitalize">
+                      Website *
+                    </p>
+                    <input
+                      class="w-full p-3 border-[1px] border-solid border-[#70707052]"
+                      name="zip_code"
+                      required
+                    />
+                  </div>
+                </form>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="financing_options"
+                    class="mr-2"
+                  />
+                  <span class="text-[14px] font-400 text-[#707070] font-medium">
+                    Save my name, email, and website in this browser for the
+                    next time I comment.
+                  </span>
+                </div>
+                <div class="text-center mt-5">
+                  <Button
+                    variant="default"
+                    className="px-[58px] text-[14.4px] min-w-auto mt-3 !bg-[#51acfb] text-white rounded-none"
+                  >
+                    Post Comment
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-[30px]">
+              <div class="flex items-center justify-between">
+                {fenceTypeSubCategoryDetailsPrev !== null && (
+                  <div class="flex items-center">
+                    <figure class="size-[96px] shrink-0">
+                      <CloudfrontImg
+                        src={
+                          fenceTypeSubCategoryDetailsPrev?.post?.featuredImage
+                            ?.node?.mediaItemUrl
+                        }
+                        alt={
+                          fenceTypeSubCategoryDetailsPrev?.post?.featuredImage
+                            ?.node?.altText
+                        }
+                        className="size-full object-cover"
+                      />
+                    </figure>
+                    <div class="pr-2 pl-3">
+                      <p class="text-[11px] uppercase mb-1">Previous</p>
+                      <a
+                        href={`/fence-installation/${fencePostDetails.post.previousPostId.toLocaleLowerCase()}`}
+                        class="text-[17px] hover:text-primary transition-all duration-300 text-[#252525] font-montserratmedium"
+                      >
+                        {fenceTypeSubCategoryDetailsPrev.post.title}
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {fenceTypeSubCategoryDetailsNext !== null && (
+                  <div class="flex items-center flex-row-reverse ml-auto">
+                    <figure class="size-[96px] shrink-0">
+                      <CloudfrontImg
+                        src={
+                          fenceTypeSubCategoryDetailsNext?.post?.featuredImage
+                            ?.node?.mediaItemUrl
+                        }
+                        alt={
+                          fenceTypeSubCategoryDetailsNext?.post?.featuredImage
+                            ?.node?.altText
+                        }
+                        className="size-full object-cover"
+                      />
+                    </figure>
+                    <div class="pr-3 text-right">
+                      <p class="text-[11px] uppercase mb-1">Next</p>
+                      <a
+                        href={`/fence-installation/${fencePostDetails.post.nextPostId.toLocaleLowerCase()}`}
+                        class="text-[17px] hover:text-primary transition-all duration-300 text-headingPrimary font-montserratmedium"
+                      >
+                        {fenceTypeSubCategoryDetailsNext.post.title}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    ) : null
+  }
+</Layout>

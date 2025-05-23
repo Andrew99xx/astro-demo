@@ -1,0 +1,36 @@
+---
+import GetFenceQuote from "../components/GetAFenceQuoteToday/GetFenceQuote";
+import InnerBanner from "../components/InnerBanner/InnerBanner";
+import InnerBannerCard from "../components/InnerBanner/InnerBannerCard";
+import TestimonialRatingReview from "../components/Testimonial/TestimonialRatingReview";
+import { Button } from "../components/ui/button";
+import client from "../graphql/client/ApolloClient";
+import type { IRequestAnEstimateQueryResponse } from "../graphql/generatedType/RequestEstimateTypes";
+import { requestEstimate } from "../graphql/gql/requestEstimate.gql";
+import Layout from "../layouts/Layout.astro";
+
+const { data: estimateData } =
+  await client.query<IRequestAnEstimateQueryResponse>({
+    query: requestEstimate,
+    fetchPolicy: "cache-first",
+  });
+---
+
+<Layout>
+  <InnerBanner
+    data={estimateData.page.commonHeaderBanner}
+    commonTitle="Request an Estimate"
+    noRightPart
+    requestEstimateBanner
+  />
+  <GetFenceQuote
+    client:load
+    fenceData={estimateData.themeSettings}
+    fromBtntext="GET STARTED"
+  />
+  <TestimonialRatingReview
+    client:load
+    textCenter
+    data={estimateData.allTestimonials}
+  />
+</Layout>
