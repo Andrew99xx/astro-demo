@@ -1,0 +1,30 @@
+---
+import SubCategoryFenceType from "../../../components/SubCategoryFenceType/SubCategoryFenceType";
+import client from "../../../graphql/client/ApolloClient";
+import type { IFenceTypesSidebar } from "../../../graphql/generatedType/FenceTypeResponseTypes";
+import type { ICommonSideBarQueryResponse } from "../../../graphql/generatedType/FenceTypeSubCategoryTypes";
+import { CommonSideBarQuery } from "../../../graphql/gql/commonSidebar.gql";
+import { FenceSubcategoryDetails } from "../../../graphql/gql/fenceTypeSubCategoryDetails.gql";
+import Layout from "../../../layouts/Layout.astro";
+
+const { slug } = Astro.params;
+
+const { data: galleryData } = await client.query<ICommonSideBarQueryResponse>({
+  query: FenceSubcategoryDetails,
+  variables: {
+    id: slug,
+  },
+});
+
+const { data: commonSidebarData } = await client.query<IFenceTypesSidebar>({
+  query: CommonSideBarQuery,
+});
+---
+
+<Layout>
+  <SubCategoryFenceType
+    client:load
+    data={galleryData}
+    sideBarData={commonSidebarData}
+  />
+</Layout>

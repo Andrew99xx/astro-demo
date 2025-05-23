@@ -1,0 +1,343 @@
+---
+// import { YouTube } from "astro-embed";
+import LocationPageBanner from "../../components/Banner/LocationPageBanner";
+import CustomSingleMapSec from "../../components/CustomFindMap/SingleMap";
+import Finance from "../../components/Finance/Finance";
+import GetFenceQuote from "../../components/GetAFenceQuoteToday/GetFenceQuote";
+import NewsRecentPost from "../../components/NewsRecentPost/NewsRecentPost";
+import SelectYourFenceSec from "../../components/SelectYourFenceSec/SelectYourFenceSec";
+import Testimonial from "../../components/Testimonial/Testimonial";
+import { CloudfrontImg } from "../../components/ui/CloudfrontImg";
+import StarIcon from "../../components/ui/Icons/StarIcon";
+import client from "../../graphql/client/ApolloClient";
+import type { IServiceLocationResponse } from "../../graphql/generatedType/ResponseType";
+import { IServiceLocationQuery } from "../../graphql/gql/birmingham.gql";
+import assets from "../../json/assets";
+import Layout from "../../layouts/Layout.astro";
+import FenceInstallationVideo from "../../components/FenceInstallationVideo/FenceInstallationVideo";
+
+const { locationSlug } = Astro.params;
+// const { data, error } = await client.query<HomepageQueryData>({
+//   query: HomepageQuery,
+// });
+const { data: locationData, error: birminghamError } =
+  await client.query<IServiceLocationResponse>({
+    query: IServiceLocationQuery,
+    variables: {
+      id: locationSlug,
+    },
+    fetchPolicy: "cache-first",
+  });
+
+console.log(locationData, "locationData");
+---
+
+<Layout
+  title={locationData?.locationState?.edges[0]?.node?.seo?.title}
+  description={locationData?.locationState?.edges[0]?.node?.seo?.metaDesc}
+  metaKeywords={locationData?.locationState?.edges[0]?.node?.seo?.metaKeywords}
+  opengraphDescription={locationData?.locationState?.edges[0]?.node?.seo
+    ?.opengraphDescription}
+  metaRobotsNofollow={locationData?.locationState?.edges[0]?.node?.seo
+    ?.metaRobotsNofollow}
+  metaRobotsNoindex={locationData?.locationState?.edges[0]?.node?.seo
+    ?.metaRobotsNoindex}
+  twitterDescription={locationData?.locationState?.edges[0]?.node?.seo
+    ?.twitterDescription}
+  twitterTitle={locationData?.locationState?.edges[0]?.node?.seo?.twitterTitle}
+  twitterImage={locationData?.locationState?.edges[0]?.node?.seo?.twitterImage
+    ?.mediaItemUrl}
+  twitterImage={locationData?.locationState?.edges[0]?.node?.seo?.twitterImage
+    ?.altText}
+  opengraphTitle={locationData?.locationState?.edges[0]?.node?.seo
+    ?.opengraphTitle}
+  opengraphType={locationData?.locationState?.edges[0]?.node?.seo
+    ?.opengraphType}
+  opengraphUrl={locationData?.locationState?.edges[0]?.node?.seo?.opengraphUrl}
+  opengraphSiteName={locationData?.locationState?.edges[0]?.node?.seo
+    ?.opengraphSiteName}
+  focuskw={locationData?.locationState?.edges[0]?.node?.seo?.focuskw}
+  canonical={locationData?.locationState?.edges[0]?.node?.seo?.canonical}
+  schema={locationData?.locationState?.edges[0]?.node?.seo?.schema?.raw}
+>
+  {
+    locationData !== null && (
+      <>
+        <div class=" relative bannerHome">
+          <figure class=" absolute size-full left-0 top-0 z-10">
+            <CloudfrontImg
+              src={
+                locationData?.locationState?.edges[0]?.node?.locationPurpose
+                  .locationBannerImage.node.mediaItemUrl
+              }
+              alt={
+                locationData?.locationState?.edges[0]?.node?.locationPurpose
+                  .locationBannerImage.node.altText
+              }
+              className=" size-full object-cover"
+              fetchpriority="high"
+              loading="eager"
+            />
+          </figure>
+
+          <div class="pt-[200px] pb-[150px] relative z-20">
+            <div class=" container">
+              <div class=" flex flex-wrap -m-[9px] md:-m-[25px]">
+                <div class=" w-[67%] p-[9px] relative md:w-[100%] md:p-[25px]" >
+                  <LocationPageBanner
+                    client:only="react"
+                    data={locationData?.locationState}
+                  />
+                </div>
+                <div class=" w-[33%] p-[9px] md:w-[100%] md:p-[25px]">
+                  <div class=" bg-[rgba(130,19,2,.8)] px-[30px] pt-4 pb-[22px] ">
+                    <h3 class="text-white text-center text-[26px] lg:text-[22px] font-medium mb-5">
+                      Why Choose Superior Fence & Rail?
+                    </h3>
+                    <p class="text-white text-center text-[16px] font-normal mb-[10px]">
+                      <i>…because we are the highest rated!</i>
+                    </p>
+
+                    <div class="bg-[#707070] p-[20px] max-w-[300px] mx-auto relative">
+                      <img
+                        src={assets?.badge}
+                        alt="badge"
+                        class="absolute top-0 right-[26px] w-[56px] h-[93px] "
+                      />
+                      <span class="text-[28px] font-robotolight text-white leading-6">
+                        {/* 21190  */}
+                        21210
+                      </span>
+                      <p class="text-[28px] font-robotolight text-white leading-6">
+                        Certified <br /> Reviews
+                      </p>
+                      <div class="flex items-center space-x-2">
+                        <ul class="flex items-center space-x-2 ">
+                          <li>
+                            <StarIcon />
+                          </li>
+                          <li>
+                            <StarIcon />
+                          </li>
+                          <li>
+                            <StarIcon />
+                          </li>
+                          <li>
+                            <StarIcon />
+                          </li>
+                          <li>
+                            <StarIcon />
+                          </li>
+                        </ul>
+                        <p class="text-white">4.8</p>
+                      </div>
+                    </div>
+                    <div class="mt-[30px]">
+                      <a
+                        href={`/${locationSlug}/#estimate`}
+                        href="#estimate"
+                        class="text-[14px] text-center min-w-auto !w-full bg-white text-primary font-robotomedium py-[10px] px-[20px] leading-1 rounded-[5px] inline-block"
+                      >
+                        {"GET A FENCE QUOTE >"}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="p-2 bg-[#821302] relative z-20" />
+        </div>
+        <SelectYourFenceSec
+          noBtn
+          data={locationData?.allFenceTypesCategory}
+          showInnerCard
+          headerBottomBlockOneDescription={
+            locationData?.locationState?.edges[0]?.node?.locationPurpose
+              ?.headerBottomBlockOneDescription
+          }
+          headerBottomBlockOneHeading={
+            locationData?.locationState?.edges[0]?.node?.locationPurpose
+              ?.headerBottomBlockOneHeading
+          }
+          headerBottomBlockOneLink={`/${locationSlug}/#superior`}
+          headerBottomBlockTwoLink={`/${locationSlug}/#superior`}
+          headerBottomBlockThreeLink={`/${locationSlug}/#superior`}
+          headerBottomBlockThreeDescription={
+            locationData?.locationState?.edges[0]?.node?.locationPurpose
+              ?.headerBottomBlockThreeDescription
+          }
+          headerBottomBlockThreeHeading={
+            locationData?.locationState?.edges[0]?.node?.locationPurpose
+              ?.headerBottomBlockThreeHeading
+          }
+          headerBottomBlockTwoHeading={
+            locationData?.locationState?.edges[0]?.node?.locationPurpose
+              ?.headerBottomBlockTwoHeading
+          }
+          headerBottomBlockTwoDescription={
+            locationData?.locationState?.edges[0]?.node?.locationPurpose
+              ?.headerBottomBlockTwoDescription
+          }
+        />
+        <Testimonial
+          client:load
+          locationSlug={locationData?.locationState?.edges[0]?.node?.slug}
+          data={
+            locationData?.locationState?.edges[0]?.node?.locationPurpose
+              ?.chooseTestimonials
+          }
+        />
+
+        {/* Why choose Superior Fence */}
+
+        <div class="py-[100px] md:pb-[70px] md:py-[80px] xs:py-[60px]">
+          <div class="container">
+            <h2 class="text-center mb-[56px] md:text-[28px] md:mb-[35px] xs:text-[24px]" id="superior">
+              {
+                locationData?.locationState?.edges[0]?.node?.locationPurpose
+                  .whySuperiorFenceHeading
+              }
+            </h2>
+
+            <div>
+              <p class="text-center mb-[4em]">
+                {
+                  locationData?.locationState?.edges[0]?.node?.locationPurpose
+                    ?.whySuperiorFenceDescription
+                }
+              </p>
+
+              {locationData?.locationState?.edges[0]?.node?.locationPurpose?.whySuperiorFenceListing?.map(
+                (item) => (
+                  <div class="grid grid-cols-3 gap-[50px] mb-[60px] md:gap-[15px] md:grid-cols-1">
+                    <div class="col-span-1 text-right md:text-left pl-[25px] md:pl-[0] ">
+                      <h3 class="text-[28px] md:text-[22px]">
+                        {item.whySuperiorFenceListingTitle}
+                      </h3>
+                    </div>
+                    <div class="col-span-2 pr-[25px] md:col-span-1">
+                      <div
+                        set:html={item.whySuperiorFenceListingDescription}
+                        class="whyFenece_cnt"
+                      />
+
+                      <div class="pt-[50px] md:pt-[30px]">
+                        <a
+                          href={`/about-us/why-superior-fence-rail/${item.learnMoreButtonTag}`}
+                          class="!uppercase px-[50px] text-[14.4px] bg-primary text-white py-[10px] inline-block rounded-[0.375rem] hover:bg-primary/90"
+                        >
+                          {` Learn More >`}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        </div>
+        <GetFenceQuote
+          client:load
+          fenceData={locationData?.themeSettings}
+          fromBtntext="GET STARTED"
+        />
+        <Finance
+          client:load
+          data={locationData?.themeSettings}
+          locationSlug={locationSlug}
+        />
+
+        {/* Fence Installation Video Sections */}
+        <FenceInstallationVideo
+          client:only="react"
+          data={locationData?.locationState}
+        />
+
+        <CustomSingleMapSec
+          client:only="react"
+          locationLat={
+            locationData.locationState?.edges[0]?.node?.locationPurpose
+              ?.locationLat
+          }
+          locationLong={
+            locationData.locationState?.edges[0]?.node?.locationPurpose
+              ?.locationLong
+          }
+          mapAreaAddress={
+            locationData.locationState?.edges[0]?.node?.locationPurpose
+              ?.mapBlockAddress
+          }
+          mapAreaEmail={
+            locationData.locationState?.edges[0]?.node?.locationPurpose
+              ?.mapBlockEmail
+          }
+          mapAreaHeading={
+            locationData.locationState?.edges[0]?.node?.locationPurpose
+              ?.mapBlockHeading
+          }
+          mapAreaImage={
+            locationData.locationState?.edges[0]?.node?.locationPurpose
+              ?.mapBlockImage
+          }
+          mapAreaPhone={
+            locationData.locationState?.edges[0]?.node?.locationPurpose
+              ?.mapBlockPhone
+          }
+        />
+        {/* About sec */}
+        <div class="p-[4px] bg-[#821302] relative z-20" />
+        <div class="bg-[#ededed] py-[80px] relative">
+          <div class="container">
+            <div class="grid grid-cols-12 gap-8 ">
+              <div class="col-span-4 md:col-span-12 ">
+                <div class="relative">
+                  <CloudfrontImg
+                    src={
+                      locationData?.locationState?.edges[0]?.node
+                        ?.locationPurpose?.aboutSuperiorFenceImage?.node
+                        ?.mediaItemUrl
+                    }
+                    alt={
+                      locationData?.locationState?.edges[0]?.node
+                        ?.locationPurpose?.aboutSuperiorFenceImage?.node
+                        ?.altText
+                    }
+                    loading="lazy"
+                    className="w-[400px] h-[600px] md:w-full"
+                  />
+                </div>
+              </div>
+              <div class="col-span-8 md:col-span-12">
+                <div>
+                  <h2 class="mb-[16px] text-[26px] text-primary leading-[1.2] xs:text-[24px] ">
+                    {
+                      locationData?.locationState?.edges[0]?.node
+                        ?.locationPurpose?.aboutSuperiorFenceHeading
+                    }
+                  </h2>
+                  <div
+                    set:html={
+                      locationData?.locationState?.edges[0]?.node
+                        ?.locationPurpose?.aboutSuperiorFenceDescription
+                    }
+                    class="location_about_block"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <NewsRecentPost
+          serviceArea
+          serviceTitle={locationData?.locationState?.edges[0]?.node?.name}
+          postData={locationData?.posts}
+          serviceData={locationData?.locationState?.edges[0]?.node?.location}
+        />
+      </>
+    )
+  }
+</Layout>
+
+
+

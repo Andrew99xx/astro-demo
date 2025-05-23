@@ -1,0 +1,80 @@
+---
+import InnerBanner from "../../components/InnerBanner/InnerBanner";
+import AboutsUs from "../../components/AboutUs/AboutsUs";
+import Layout from "../../layouts/Layout.astro";
+import client from "../../graphql/client/ApolloClient";
+import { AboutUsQuery } from "../../graphql/gql/about.gql";
+import type { IAboutUsQueryResult } from "../../graphql/generatedType/CommonTypes";
+import SuperiorSec from "../../components/SuperiorSec/SuperiorSec";
+import type { HomepageQueryData } from "../../graphql/generatedType/ResponseType";
+import { HomepageQuery } from "../../graphql/gql/home.gql";
+import Testimonial2 from "../../components/Testimonial/Testimonial2";
+import NewsRecentPost2 from "../../components/NewsRecentPost/NewsRecentPost2";
+
+const { data: aboutUsQueryData } = await client.query<IAboutUsQueryResult>({
+  query: AboutUsQuery,
+});
+
+const { data: homePageData, error } = await client.query<HomepageQueryData>({
+  query: HomepageQuery,
+});
+console.log(aboutUsQueryData, "aboutUsQueryData");
+---
+
+<Layout
+  title={aboutUsQueryData?.pages?.edges[0]?.node?.seo?.title}
+  description={aboutUsQueryData?.pages?.edges[0]?.node?.seo?.metaDesc}
+  metaKeywords={aboutUsQueryData?.pages?.edges[0]?.node?.seo?.metaKeywords}
+  opengraphDescription={aboutUsQueryData?.pages?.edges[0]?.node?.seo
+    ?.opengraphDescription}
+  metaRobotsNofollow={aboutUsQueryData?.pages?.edges[0]?.node?.seo
+    ?.metaRobotsNofollow}
+  metaRobotsNoindex={aboutUsQueryData?.pages?.edges[0]?.node?.seo
+    ?.metaRobotsNoindex}
+  twitterDescription={aboutUsQueryData?.pages?.edges[0]?.node?.seo
+    ?.twitterDescription}
+  twitterTitle={aboutUsQueryData?.pages?.edges[0]?.node?.seo?.twitterTitle}
+  twitterImage={aboutUsQueryData?.pages?.edges[0]?.node?.seo?.twitterImage
+    ?.mediaItemUrl}
+  twitterImage={aboutUsQueryData?.pages?.edges[0]?.node?.seo?.twitterImage
+    ?.altText}
+  opengraphTitle={aboutUsQueryData?.pages?.edges[0]?.node?.seo?.opengraphTitle}
+  opengraphType={aboutUsQueryData?.pages?.edges[0]?.node?.seo?.opengraphType}
+  opengraphUrl={aboutUsQueryData?.pages?.edges[0]?.node?.seo?.opengraphUrl}
+  opengraphSiteName={aboutUsQueryData?.pages?.edges[0]?.node?.seo
+    ?.opengraphSiteName}
+  focuskw={aboutUsQueryData?.pages?.edges[0]?.node?.seo?.focuskw}
+  canonical={aboutUsQueryData?.pages?.edges[0]?.node?.seo?.canonical}
+  schema={aboutUsQueryData?.pages?.edges[0]?.node?.seo?.schema?.raw}
+>
+  <InnerBanner
+    client:load
+    data={aboutUsQueryData?.pages.edges[0]?.node?.commonHeaderBanner}
+    commonTitle={aboutUsQueryData?.pages.edges[0]?.node?.commonHeaderBanner
+      ?.commonHeaderBannerTitle}
+    bannerType="Gallery"
+    aboutUsHeadingMapImage={aboutUsQueryData?.pages.edges[0]?.node
+      .aboutUsPagePurpose.aboutUsHeadingMapImage.node.mediaItemUrl}
+    aboutUsHeadingMapImageAlt={aboutUsQueryData?.pages.edges[0]?.node
+      .aboutUsPagePurpose.aboutUsHeadingMapImage.node.altText}
+      rightLink="/fence-service-locations/"
+  >
+    <p class="text-[20px] font-montserratregular font-normal text-[#444444]">
+      {
+        aboutUsQueryData?.pages.edges[0]?.node?.commonHeaderBanner
+          ?.commonHeaderBannerDescription
+      }
+    </p>
+  </InnerBanner>
+  <AboutsUs
+    client:load
+    data={aboutUsQueryData?.pages.edges[0].node.aboutUsPagePurpose}
+  />
+  <Testimonial2
+    client:load
+    data={aboutUsQueryData.allTestimonials}
+    locationSlug=""
+  />
+  <SuperiorSec data={homePageData?.page?.homePagePurposeNew} client:load />
+  <NewsRecentPost2 postData={aboutUsQueryData.posts} client:load />
+</Layout>
